@@ -87,11 +87,11 @@ void main() {
   uv.x *= resolution.x / resolution.y;
   float f = pattern(uv);
   if (enableMouseInteraction == 1) {
-    vec2 mouseNDC = (mousePos / resolution - 0.5) * vec2(1.0, -1.0);
+    vec2 mouseNDC = (mousePos / resolution - 0.5) * vec2(1.0, 1.0);
     mouseNDC.x *= resolution.x / resolution.y;
     float dist = length(uv - mouseNDC);
     float effect = 1.0 - smoothstep(0.0, mouseRadius, dist);
-    f -= 0.5 * effect;
+    f += 0.5 * effect;
   }
   vec3 col = mix(vec3(0.0), waveColor, f);
   gl_FragColor = vec4(col, 1.0);
