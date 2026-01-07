@@ -132,7 +132,7 @@ export default function Home() {
           Podu.pics
         </h1>
 
-        <div className="w-[90%] max-w-2xl bg-white/10 backdrop-blur-xl rounded-[32px] shadow-2xl p-8 md:p-4 border border-white/20 pointer-events-auto">
+        <div className="w-[90%] max-w-2xl bg-white/10 backdrop-blur-xl rounded-[32px] shadow-2xl p-4 border border-white/20 pointer-events-auto">
 
           {uploadedUrl ? (
             <div className="flex flex-col items-center gap-6 min-h-[200px] md:min-h-[300px] justify-center ">
