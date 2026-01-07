@@ -1,6 +1,5 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 
-// Initialize R2 client (S3-compatible)
 const r2Client = new S3Client({
   region: 'auto',
   endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -15,31 +14,40 @@ export interface UploadResult {
   url: string;
 }
 
-/**
- * Upload a file buffer to Cloudflare R2
- * @param buffer - File buffer to upload
- * @param key - Unique key/filename for the file
- * @param contentType - MIME type of the file
- * @returns Upload result with key and public URL
- */
 export async function uploadToR2(
   buffer: Buffer,
   key: string,
   contentType: string
 ): Promise<UploadResult> {
-  const command = new PutObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME!,
-    Key: key,
-    Body: buffer,
-    ContentType: contentType,
-  });
+  await r2Client.send(
+    new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME!,
+      Key: key,
+      Body: buffer,
+      ContentType: contentType,
+    })
+  );
 
-  await r2Client.send(command);
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  return { key, url: `${baseUrl}/${key}` };
+}
 
-  // Construct public URL
-  const url = `${process.env.R2_PUBLIC_URL}/${key}`;
+export async function getFromR2(key: string) {
+  const response = await r2Client.send(
+    new GetObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME!,
+      Key: key,
+    })
+  );
 
-  return { key, url };
+  if (!response.Body) {
+    throw new Error('Image not found');
+  }
+
+  const buffer = Buffer.from(await response.Body.transformToByteArray());
+  const contentType = response.ContentType || 'image/jpeg';
+
+  return { buffer, contentType };
 }
 
 export default r2Client;
